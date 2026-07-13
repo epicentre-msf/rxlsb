@@ -1,0 +1,7 @@
+.Rproj.user
+.Rhistory
+.DS_store
+archive/
+data-raw/
+docs
+*.html

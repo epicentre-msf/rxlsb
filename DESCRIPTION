@@ -1,0 +1,22 @@
+Package: rxlsb
+Title: Read Excel Binary ('.xlsb') Files via python-calamine
+Version: 0.1.0
+Authors@R:
+    person("Patrick", "Barks", email = "patrick.barks@gmail.com",
+           role = c("aut", "cre"))
+Description: Reads Excel binary workbook ('.xlsb') files, which 'readxl'
+    cannot open, by wrapping the Python package 'python-calamine' through
+    'reticulate'. Provides a 'readxl'-style interface with two functions:
+    one to read a single sheet into a tibble and one to list sheet names.
+    The Python dependency is installed automatically on first use.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Imports:
+    reticulate,
+    tibble
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+SystemRequirements: Python (>= 3.9)
