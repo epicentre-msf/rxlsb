@@ -10,7 +10,7 @@ pc_san <- NULL
   # Declare the Python dependency so reticulate installs it automatically
   # (via uv) the first time Python is initialised. This does not itself
   # start Python.
-  reticulate::py_require("python-calamine")
+  reticulate::py_require("python-calamine>=0.8")
 
   # delay_load = TRUE means Python is not initialised until the module is
   # first actually used, so library(rxlsb) stays cheap.
