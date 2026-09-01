@@ -33,4 +33,5 @@ rxlsb("workbook.xlsb", sheet = "data")
 # readxl-style options
 rxlsb("workbook.xlsb", col_names = FALSE)
 rxlsb("workbook.xlsb", col_types = c("text", "numeric", "date"), na = c("", "NA"))
+rxlsb("workbook.xlsb", skip = 2)
 ```

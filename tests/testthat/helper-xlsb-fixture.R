@@ -72,15 +72,22 @@
 # xl/worksheets/sheet1.bin: BrtWsDim, BrtBeginSheetData, one BrtRowHdr +
 # BrtCellRk pair per cell, BrtEndSheetData. Cell values are small integers
 # encoded via the RK "signed integer" variant (fInt bit set).
-.build_sheet1_bin <- function(nrow = 3L, ncol = 2L) {
-  wsdim <- .biff_record(0x0094, c(.u32le(0L), .u32le(nrow - 1L), .u32le(0L), .u32le(ncol - 1L)))
+# `data_rows` gives the 0-based sheet row of each of the `nrow` data rows,
+# letting a test place data below empty rows or leave gaps; cell values
+# depend only on a row's position within `data_rows`, not its sheet row.
+.build_sheet1_bin <- function(nrow = 3L, ncol = 2L, data_rows = seq_len(nrow) - 1L) {
+  stopifnot(length(data_rows) == nrow)
+  wsdim <- .biff_record(0x0094, c(
+    .u32le(min(data_rows)), .u32le(max(data_rows)),
+    .u32le(0L), .u32le(ncol - 1L)
+  ))
   begin_data <- .biff_record(0x0091, raw(0))
 
   rows <- raw(0)
-  for (r in seq_len(nrow) - 1L) {
-    rows <- c(rows, .biff_record(0x0000, .u32le(r))) # BrtRowHdr
+  for (i in seq_len(nrow) - 1L) {
+    rows <- c(rows, .biff_record(0x0000, .u32le(data_rows[[i + 1L]]))) # BrtRowHdr
     for (cl in seq_len(ncol) - 1L) {
-      value <- (r * ncol + cl + 1L) * 10L
+      value <- (i * ncol + cl + 1L) * 10L
       rk <- bitwOr(bitwShiftL(as.integer(value), 2L), 0x2L) # fInt = 1
       cell_payload <- c(.u32le(cl), .u32le(0L), .u32le(rk))
       rows <- c(rows, .biff_record(0x0002, cell_payload)) # BrtCellRk
@@ -98,18 +105,21 @@
 )
 
 # Build a minimal one-sheet `.xlsb` file, named "data", with `nrow` x `ncol`
-# integer cells (row 0 is 10, 20, ...; each subsequent row +10 per column
-# step), and a BrtAbsPath15 record encoding `abspath`. Returns the path to a
-# temp file. Uses Python's stdlib `zipfile` (via reticulate) purely as a zip
-# writer -- rxlsb already requires Python at runtime.
-build_minimal_xlsb <- function(abspath, nrow = 3L, ncol = 2L) {
+# integer cells (the first data row is 10, 20, ...; each subsequent row +10
+# per column step), and a BrtAbsPath15 record encoding `abspath`. `data_rows`
+# optionally places the data rows at specific 0-based sheet rows (see
+# .build_sheet1_bin). Returns the path to a temp file. Uses Python's stdlib
+# `zipfile` (via reticulate) purely as a zip writer -- rxlsb already requires
+# Python at runtime.
+build_minimal_xlsb <- function(abspath, nrow = 3L, ncol = 2L,
+                               data_rows = seq_len(nrow) - 1L) {
   zipfile <- reticulate::import("zipfile")
 
   out_path <- tempfile(fileext = ".xlsb")
   zf <- zipfile$ZipFile(out_path, "w", zipfile$ZIP_DEFLATED)
   zf$writestr("xl/workbook.bin", .build_workbook_bin(abspath))
   zf$writestr("xl/_rels/workbook.bin.rels", .xlsb_fixture_rels_xml)
-  zf$writestr("xl/worksheets/sheet1.bin", .build_sheet1_bin(nrow, ncol))
+  zf$writestr("xl/worksheets/sheet1.bin", .build_sheet1_bin(nrow, ncol, data_rows))
   zf$close()
   out_path
 }

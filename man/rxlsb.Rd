@@ -4,7 +4,7 @@
 \alias{rxlsb}
 \title{Read a sheet from an '.xlsb' workbook}
 \usage{
-rxlsb(path, sheet = 1, col_names = TRUE, col_types = NULL, na = "")
+rxlsb(path, sheet = 1, col_names = TRUE, col_types = NULL, na = "", skip = 0)
 }
 \arguments{
 \item{path}{Path to the \code{.xlsb} file.}
@@ -22,6 +22,11 @@ entry per column. \code{"skip"} drops the column from the result.}
 
 \item{na}{Character vector of strings to treat as missing values, in
 addition to empty cells. Defaults to \code{""}.}
+
+\item{skip}{Number of rows to skip before reading anything, be it column
+names or data. Rows are counted from the top of the sheet, and leading
+empty rows are always skipped automatically, so this is a lower bound.
+Defaults to 0.}
 }
 \value{
 A \link[tibble:tibble]{tibble} with one column per column of the sheet.
@@ -55,6 +60,7 @@ rxlsb("workbook.xlsb")
 rxlsb("workbook.xlsb", sheet = "data")
 rxlsb("workbook.xlsb", col_names = FALSE)
 rxlsb("workbook.xlsb", col_types = "text")
+rxlsb("workbook.xlsb", skip = 2)
 }
 
 }
