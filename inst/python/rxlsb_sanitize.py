@@ -30,6 +30,33 @@ with the file. `BrtAbsPath15` carries no information needed to read cell
 data, so the workaround is simply to strip it (and any other record type
 calamine doesn't need) out of `xl/workbook.bin` before handing the archive
 to calamine.
+
+Why not switch to pyxlsb instead?
+----------------------------------
+`pyxlsb` is a separate, pure-Python `.xlsb` parser that does not have this
+bug, so it looks like an easy way to drop this workaround entirely. It was
+evaluated and rejected:
+
+  - It does not recognise dates. Cells come back as raw Excel serial floats;
+    callers must inspect each cell's number format and call
+    `pyxlsb.convert_date()` themselves. rxlsb's type layer
+    (`.build_column_guess()` / `.build_column_date()` in R/rxlsb.R) relies on
+    calamine handing back already-typed cells (native dates, numbers,
+    booleans, text) -- switching would silently break automatic date
+    detection, which matters a lot for date-heavy line-list data.
+  - It is effectively unmaintained (last release 1.0.10, October 2022, no
+    activity since), while calamine is actively developed and is pandas'
+    preferred `.xlsb` engine.
+  - It is meaningfully slower than calamine.
+  - Confirmed directly against calamine's `master` branch: this bug is still
+    unfixed as of the latest release (v0.36.0), so pinning a newer
+    python-calamine isn't a way to drop this workaround either -- the retry
+    logic in `.workbook()` (R/list_sheets.R) is still required.
+
+The right long-term fix is upstream: teach calamine's `read_workbook` to
+consume the length + payload of record types it doesn't recognise (mirroring
+what `next_skip_blocks` already does), which would make this whole module
+unnecessary. That has not been attempted yet.
 """
 
 import io
