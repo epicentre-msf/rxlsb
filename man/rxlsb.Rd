@@ -28,7 +28,7 @@ A \link[tibble:tibble]{tibble} with one column per column of the sheet.
 }
 \description{
 Reads a single worksheet from an Excel binary (\code{.xlsb}) workbook into a
-tibble. This is the \code{.xlsb} counterpart to \code{\link[readxl:read_excel]{readxl::read_xlsx()}}.
+tibble. This is the \code{.xlsb} counterpart to \code{\link[readxl:read_xlsx]{readxl::read_xlsx()}}.
 }
 \details{
 Cell types are taken from python-calamine: text becomes \code{character}, numbers
